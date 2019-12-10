@@ -1,57 +1,108 @@
-{% extends 'survey/base.html' %}
+
+
 {% load i18n %}
 {% load survey_extras %}
 
-{% block title %} {{survey.name}} {% endblock title %}
+{% load static %}
 
-{% block extrajs %}
-    {{response_form.media}}
-{% endblock %}
+<head>
+	<link rel="stylesheet" type="text/css" href="{% static "vendors/css/normalize.css" %}">
+	<link href="https://unpkg.com/ionicons@4.5.10-0/dist/css/ionicons.min.css" rel="stylesheet">
+	<script src="https://kit.fontawesome.com/bfebbf810e.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="{% static "vendors/css/grid.css" %}">
+	<!-- <link rel="stylesheet" type="text/css" href="Vendors/css/ionicons.min.css"> -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<link rel="stylesheet" type="text/css" href="{% static "resources/css/style.css" %}">
+	<link href="https://fonts.googleapis.com/css?family=Raleway:100,200,300,300i,400&display=swap&subset=latin-ext" rel="stylesheet">
+	<title>Dashboard - Engagehane</title>
+	<meta charset="UTF-8">
+
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+
+</head>
 
 {% block body %}
-	<h1> {{survey.name}} </h1>
-	<div class="survey-description"> {{survey.description|safe}} </div>
-	<div>
-      {% if step and step != 0 %}
-		<form action="{% url 'survey-detail-step' id=survey.id step=step %}" method="post">
-	{% else %}
-		<form action="{% url 'survey-detail' id=survey.id %}" method="post">
-	{% endif %}
-	    {% csrf_token %}
-        {% for category in categories %}
-            <h3> {{category}} </h3>
-            <p> {{category.description}} </p>
-			<div class="panel-group" id="accordion">
-				<div class="panel panel-default">
-				    <div class="panel-heading">
-				        <h3 class="panel-title"> <a
-				        data-toggle="collapse"
-				        data-parent="#accordion"
-				        href="#collapse{{category.slugify}}">
-				            {% trans "Answer this part" %}
-			            </a></h3>
-				    </div>
-                    <div class="category-container">
-				        <div id="collapse{{category.slugify}}" class="panel-collapse collapse {% if not survey.editable_answers and response_form.response is not None %}in{% endif %}
-				        {{ response_form|collapse_form:category }}">
-				            <div class="panel-body">
-	                           {% include "survey/question.html" %}
-                            </div>
-		                </div>
-                </div>
-            </div>
-        {% empty %}
-            <h3> {% trans "Questions" %} </h3>
-            {% include "survey/question.html" %}
-        {% endfor %}
-
-        <br>
-		{% if survey.editable_answers or response_form.response is None %}
-	    <input
-            class="btn btn-default btn-lg"
-	        type="submit"
-	        value="{% trans "I'm done!" %}"
-        >
+   
+        <div class="dashboard-menu">
+			<a href="{% url 'home' %}"><img src="{% static "resources/img/eH%20logo.png" %}" alt="eH logo" class="dashboard-logo"></a>
+			{% if user.is_authenticated %}
+            <ul class="dashboard-list">
+                <li><a href="{% url 'projects' %}"><i class="fas fa-tasks"></i>Projelerim</a></li>
+                <li><a href="{% url 'fırsat' %}"><i class="fas fa-gift"></i>Fırsatlarım</a></li>
+                <li><a href="{% url 'messages' %}"><i class="fas fa-inbox"></i>Gelen Kutusu</a></li>
+                <li><a href="#"><i class="fas fa-bell"></i>Bildirimler</a></li>
+                <li><a href="#"><i class="fas fa-question"></i>S.S.S</a></li>
+			</ul>
+			{% endif %}
+        </div>
+        {% if user.is_authenticated %}
+        <div class="dashboard-profile">
+            <i class="fas fa-user-circle profile-icon"></i>
+			<p>{{user.username}}</p>
+			<p><a href="{% url 'logout' %}">logout</a></p>
+<p><a href="{% url 'password_change' %}">Şifre değiştir</a></p>
+		</div>
 		{% endif %}
-	</form></div>
-{% endblock %}
+		<div class="dashboard-row">
+		<div class="engagehane-form"><form action="{% url 'survey-detail' id=survey.id %}" method="post">
+			{% csrf_token %}
+			{% for category in categories %}
+				<h3> {{category}} </h3>
+				
+				<div class="panel-group" id="accordion">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"> <a
+							data-toggle="collapse"
+							data-parent="#accordion"
+							href="#collapse{{category.slugify}}">
+								{% trans "Bu kategoriyi cevapla" %}
+							</a></h3>
+						</div>
+						<div class="category-container">
+							<div id="collapse{{category.slugify}}" class="panel-collapse collapse {% if not survey.editable_answers and response_form.response is not None %}in{% endif %}
+							{{ response_form|collapse_form:category }}">
+								<div class="panel-body">
+								   {% include "survey/question.html" %}
+								</div>
+								{% if survey.editable_answers or response_form.response is None %}
+			<input
+				class="btn btn-default btn-lg"
+				type="submit"
+				value="{% trans "Gönder!" %}"
+			>
+			{% endif %}
+			<br>
+							</div>
+					</div>
+				</div>
+			{% empty %}
+				<h3> {% trans "Sorular" %} </h3>
+				{% include "survey/question.html" %}
+			{% endfor %}
+	
+			<br>
+			{% if survey.editable_answers or response_form.response is None %}
+			<input
+				class="btn btn-default btn-lg"
+				type="submit"
+				value="{% trans "Gönder!" %}"
+			>
+			{% endif %}
+		</form></div>
+	</div>
+
+
+
+
+		{% endblock %}       
+    
+    
+
+
